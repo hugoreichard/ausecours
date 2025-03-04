@@ -1,44 +1,40 @@
 name: Deployment on Azure
 
-  on:
-    workflow_call
+on:
+  workflow_call
 
-  jobs:
-    update-server:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Chekout
-          uses: actions/checkout@v3
+jobs:
+  update-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-        - name: Update compose file
-          uses: appleboy/scp-action@0.1.7
-          with:
-            host: ${{secrets.HOST}}
-            port: ${{secrets.PORT}}
-            username: ${{secrets.USERNAME}}
-            password: ${{secrets.PASSWORD}}
-
-            source: "./docker-compose.yml"
-            target: "."
+      - name: Update compose file
+        uses: appleboy/scp-action@0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: "./docker-compose.yml"
+          target: "."
 
   deploy-compose:
     needs: [update-server]
     runs-on: ubuntu-latest
-    
 
     steps:
-       - name: Chekout
-          uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-        - name: Start compose file
-          uses: appleboy/ssh-action@1.0.3
-          with:
-            host: ${{secrets.HOST}}
-            port: ${{secrets.PORT}}
-            username: ${{secrets.USERNAME}}
-            password: ${{secrets.PASSWORD}}
-
-            script:
-              docker pull ghcr.io/floriansp40/back-ausecours:latest
-              docker-compose up -d
-        
+      - name: Start compose file
+        uses: appleboy/ssh-action@1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            docker pull ghcr.io/floriansp40/back-ausecours:latest
+            docker-compose up -d
