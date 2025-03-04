@@ -19,3 +19,10 @@ jobs:
       - name: The_Second
         run: echo ByeBye
         
+  Biderie:
+    needs: [Test2]
+    uses: ./.github/workflows/ghcr.yaml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
