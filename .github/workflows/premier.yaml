@@ -21,9 +21,8 @@ jobs:
         
   Biderie:
     needs: [Test2]
-    uses: ./.github/workflows/ghcr.yaml
+    uses: .github/workflows/ghcr.yaml
     secrets: inherit
     permissions:
       contents: read
       packages: write
-      
