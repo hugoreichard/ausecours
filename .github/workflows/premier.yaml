@@ -31,3 +31,8 @@ jobs:
     needs: [Biderie]
     uses: ./.github/workflows/deploy.yaml
     secrets: inherit
+
+  JeVeuxMourir:
+    needs: [truczer]
+    uses: ./.github/workflows/canary.yaml
+    secrets: inherit
