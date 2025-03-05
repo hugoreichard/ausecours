@@ -7,14 +7,14 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: The_First
         run: echo Hello
 
   test2:
     needs: [test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: The_Second
         run: echo ByeBye
