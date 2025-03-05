@@ -3,6 +3,7 @@ name: Deployment on Azure
 on:
   workflow_call
 
+
 jobs:
   update-server:
     runs-on: ubuntu-22.04
