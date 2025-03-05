@@ -1,0 +1,82 @@
+name: Canary Deployment
+
+on:
+  workflow_call
+
+jobs:
+  create_vm_up_compose:
+    runs-on: ubuntu-22.04
+    env:
+      RessourceGroupName: "micsi24sortitoutseul"
+      RessourceGroupLocation: "francecentral"
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{secrets.AZURE}}
+
+      - name: Azure CLI Create Ressource Group
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az group create --name ${{env.RessourceGroupeName}} --loation ${{env.RessourceGroupLocation}}
+            echo "azure ressoruce groue created"
+    
+      - name: Azure ARM Deploy
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{env.RessourceGroupName}}
+          template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
+          parameters: adminUsername=${{secrets.AZURE_LOGIN}} adimnPasswordOrKeys=${{secrets.AZURE_PW}} vmName="Canary" vmSize="Standard_B2s"
+      - name: Get public ip @ 
+        if: success()
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az vm show -d -g ${{env.RessourceGroupName}} -n --query publicIps -o tsv
+            echo "AZURE_VM_IP=$(az vm show -d -g ${{env.RessourceGroupName}} -n --query publicIps -o tsv)"  >> $GITHUB_ENV
+
+      - name: Install Docker
+        uses: appelboy/ssh-action@@v1.0.3
+        with:
+          host:
+          port:
+          username:
+          password:
+          script: |
+            curl -o install_docker.sh https://raw.githubusercontent.com/azure-custom-cli/scripts/refs/heads/main/install_docker_ubuntu.sh
+            ls -al
+            bash ./install_docker.sh
+
+          
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Update compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: "./docker-compose.yml"
+          target: "."
+
+      - name: Start compose file
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            sudo docker pull ghcr.io/hugoreichard/back-ausecours:latest
+            sudo docker-compose up -d
+
+
+
+
+
