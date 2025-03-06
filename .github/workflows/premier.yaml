@@ -16,7 +16,7 @@ jobs:
       mariadb:
         image: mariadb:latest
         env:
-          MARIADB_ROOT_PASSWORD: tour
+          MARIADB_ROOT_PASSWORD: toor
           MARIADB_DATABASE: test
           MARIADB_USER: test
           MARIADB_PASSWORD: test
@@ -67,6 +67,42 @@ jobs:
           path: backend/coverage
           retention-days: 3
 
+  FrontEnd:
+    needs: [Backend]
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: frontend
+
+
+
+    steps:
+      - name: Checkout
+        uses: action/checkout@v3
+
+      - name: start build backend
+        working-directory: backend 
+        run: |
+          docker compose -f docker-compose-build.yml up -d
+          docker ps -a 
+
+      - name: sleep for 10 sec
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '10s'
+
+      - name: test backend
+        if: success()
+        run: curl http://127.0.0.1:23000
+
+
+
+      
+
+      
+
+
+
 
   #   steps:
   #     - name: The_First
@@ -81,13 +117,13 @@ jobs:
   #     - name: The_Second
   #       run: echo ByeBye
         
-  # Biderie:
-  #   needs: [Test2]
-  #   uses: ./.github/workflows/ghcr.yaml
-  #   secrets: inherit
-  #   permissions:
-  #     contents: read
-  #     packages: write
+  Biderie:
+    if${{github.event_name == 'push'}}
+  uses: ./.github/workflows/ghcr.yaml
+  secrets: inherit
+  permissions:
+      contents: read
+      packages: write
       
   # truczer:
   #   needs: [Biderie]
