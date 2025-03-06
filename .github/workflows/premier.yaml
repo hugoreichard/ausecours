@@ -6,33 +6,96 @@ on:
       - main
 
 jobs:
-  test:
+  Backend:
+    if: ${{github.event_name == 'pull_request'}}
     runs-on: ubuntu-22.04
-    steps:
-      - name: The_First
-        run: echo Hello
+    defaults:
+      run:
+        working-directory: backend
 
-  test2:
-    needs: [test]
-    runs-on: ubuntu-22.04
+    services:
+      mariadb:
+        image: mariadb:latest
+        env:
+        MARIADB_ROOT_PASSWORD: tour
+        MARIADB_DATABASE: test
+        MARIADB_USER: test
+        MARIADB_PASSWORD: test
+
+      port: 
+        - 3306:3306
+
+      options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout-5s --health-retires=3
+
+    env:
+      BDD_HOST: 127.0.0.1
+      BDD_NAME: test
+      BDD_USER: test
+      BDD_PASS: test
+
     steps:
-      - name: The_Second
-        run: echo ByeBye
-        
-  Biderie:
-    needs: [Test2]
-    uses: ./.github/workflows/ghcr.yaml
-    secrets: inherit
-    permissions:
-      contents: read
-      packages: write
+      - name: Checkout
+        uses: action/checkout@v3
+
+      - name:
+        run: |
+          sudo apt-get install -y mysql-client
+          mysql --host 127.0.0.1 --port 3306 -u root -ptoor -e "SHOW DATABASES"
+
+      - name: Setup node 
+        uses: action/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Init BDD
+        run: npm
+
+      - name: Popular BDD
+        run: |
+          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test < ./test/insert_test_user.sql
       
-  truczer:
-    needs: [Biderie]
-    uses: ./.github/workflows/deploy.yaml
-    secrets: inherit
+      - name: RunInsrall test and coverage
+        run: npm run test:cov
 
-  JeVeuxMourir:
-    needs: [truczer]
-    uses: ./.github/workflows/canary.yaml
-    secrets: inherit
+      - name: Upload coverage artifact
+        user: action/upload-artifact@v4
+        with:
+          name: back-coverage-report
+          path: backend/coverage
+          retention-days: 3
+
+
+
+  #   steps:
+  #     - name: The_First
+
+  #       run: |
+  #         echo Hello
+
+  # test2:
+  #   needs: [test]
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: The_Second
+  #       run: echo ByeBye
+        
+  # Biderie:
+  #   needs: [Test2]
+  #   uses: ./.github/workflows/ghcr.yaml
+  #   secrets: inherit
+  #   permissions:
+  #     contents: read
+  #     packages: write
+      
+  # truczer:
+  #   needs: [Biderie]
+  #   uses: ./.github/workflows/deploy.yaml
+  #   secrets: inherit
+
+  # JeVeuxMourir:
+  #   needs: [truczer]
+  #   uses: ./.github/workflows/canary.yaml
+  #   secrets: inherit

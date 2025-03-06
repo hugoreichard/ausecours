@@ -73,4 +73,4 @@ jobs:
           script: |
             cd /home/${{ secrets.AZURE_LOGIN }}/
             sudo docker pull ghcr.io/hugoreichard/back-ausecours:latest
-            sudo docker-compose up -d
+            sudo docker compose up -d
