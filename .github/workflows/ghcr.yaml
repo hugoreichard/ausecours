@@ -28,3 +28,10 @@ jobs:
           context: backend
           push: true
           tags: ${{env.REGISTRY}}/hugoreichard/back-ausecours:latest
+
+      - name: Build and push to GH Package
+        uses: docker/build-push-action@v4
+        with:
+          context: FrontEnd
+          push: true
+          tags: ${{env.REGISTRY}}/hugoreichard/back-ausecours:latest
