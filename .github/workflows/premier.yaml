@@ -16,7 +16,7 @@ jobs:
       mariadb:
         image: mariadb:latest
         env:
-          MARIADB_ROOT_PASSWORD: toor
+          MARIADB_ROOT_PASSWORD: tour
           MARIADB_DATABASE: test
           MARIADB_USER: test
           MARIADB_PASSWORD: test
@@ -52,8 +52,7 @@ jobs:
         run: npm install
 
       - name: Initialize BDD
-        run: npm run init:db  # Remplace par le bon script npm
-
+        run: npm run init:db  
       - name: Populate BDD
         run: |
           mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test < ./test/insert_test_user.sql
